@@ -11,7 +11,7 @@
 		}
 	</style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 	<canvas id='screen'></canvas>
 	<script type="text/javascript">
 		const canvas = document.getElementById('screen')
@@ -109,8 +109,16 @@
 
 		let next_root_node = null
 
+		let start_animation_radius = {
+			going: false,
+			time: 0,
+			start: undefined,
+			duration: 500,
+			back: false
+		}
+
 		function hash_name(string) {
-			return string.split('').reduce((acc, char) => acc ^ ((acc<<5)-acc) + char.charCodeAt(0), 0) % 36 * 10
+			return Math.abs(string.split('').reduce((acc, char) => acc ^ ((acc<<5)-acc) + char.charCodeAt(0), 0)) % 36 * 10
 		}
 
 		function polar_to_cart(mag, angle) {
@@ -124,6 +132,29 @@
 			return 1 - (1 - x) * (1 - x)
 		}
 
+		function goto_node(node, new_path) {
+			next_root_node = node
+			path = new_path
+			start_animation_radius.going = true
+			start_animation_radius.time = 0
+			start_animation_radius.back = true
+		}
+
+		function node_hash(node) {
+			if (node.hash) return node.hash
+			node.hash = hash_name(node.name)
+			return node.hash
+		}
+
+		function generate_colors(root, odd = false) {
+			const hash = Math.floor(hash_name(root.name)/4)
+			root.hash = odd ? hash : hash + 180
+
+			for (let i = 0; i < root.children.length; ++i) {
+				generate_colors(root.children[i], i % 2 != 0)
+			}
+		}
+
 		function draw_section(arc_start, arc_size, iradius, oradius) {
 			const start_angle = arc_start
 			const end_angle = arc_start + arc_size
@@ -133,70 +164,61 @@
 			ctx.fill()
 		}
 
-		function draw_node_children(root, iradius, size, arc_size, arc_start, depth, init_depth, anim_radius, parents) {
+		function draw_node_children(root, iradius, arc_size, arc_start, depth, parents, options) {
+			const {init_depth, size, anim_radius} = options
+
 			if (depth == 0) return
 			if (iradius > anim_radius) return
+			if (root.children.length == 0) return
+
 
 			const count = root.children.length
 			const ARC = arc_size/count
-			let opacity = (depth)/init_depth
+			const opacity = depth/init_depth
+
+			let texts = []
 
 			for (let index = 0; index < count; ++index) {
-				
 				const node = root.children[index]
 				
 				const arc_s = index*ARC+arc_start
-				const arc_e = index*ARC+arc_start + ARC
-
-				const size_high =
+				const hover =
 					!start_animation_radius.going &&
 					polar_coord.mag > iradius && 
 					polar_coord.mag < iradius + size &&
 					polar_coord.angle > arc_s &&
-					polar_coord.angle < arc_e
-						? 2 
-						: 0
+					polar_coord.angle < arc_s + ARC
 
-				const local_opacity = size_high > 0 ? 1 : opacity
-
-				if (size_high && mouse_clicking) {
-					next_root_node = node
-					
-					path = path.concat(parents)
-
+				if (hover && mouse_clicking) {
 					mouse_clicking = false
-					start_animation_radius.going = true
-					start_animation_radius.time = 0
-					start_animation_radius.back = true
+					goto_node(node, [...path, ...parents])
 				}
 				
-				const oradius = Math.max(iradius + 5, Math.min(iradius + size + size_high, anim_radius))
+				const oradius = Math.max(iradius + 5, Math.min(iradius + size + (hover ? 2 : 0), anim_radius))
 				
-				ctx.fillStyle = `hsla(${hash_name(node.name)}, 50%, 60%, ${local_opacity*100}%)`
+				ctx.fillStyle = `hsla(${node_hash(node)}, 50%, 60%, ${(hover ? 1 : opacity)*100}%)`
 
-				draw_section(arc_s, ARC, iradius + 5 - size_high, oradius)
+				draw_section(arc_s, ARC, iradius + 5 - (hover ? 2 : 0), oradius)
 
-				if (node.children.length > 0) {
-					draw_node_children(node, iradius+size, size, ARC, arc_s, depth - 1, init_depth, anim_radius, [...parents, node])
-				}
-
-				ctx.font = `${32*opacity}px Arial`
-
-				if (size_high || depth == 1 || node.children.length == 0) {
+				draw_node_children(node, iradius+size, ARC, arc_s, depth - 1, [...parents, node], options)
+				
+				if (hover || depth == 1 || node.children.length == 0) {
 					const coord = polar_to_cart(oradius+10, arc_s+ARC/2 - Math.PI/2)
-					ctx.textAlign = coord[0] < origin.x ? 'end' : 'start'
-					ctx.fillStyle = `rgb(224, 224, 224)`
-					ctx.fillText(node.name, ...coord)
+					texts.push({
+						coord: coord,
+						align: coord[0] < origin.x ? 'end' : 'start',
+						name: node.name
+					})
 				}
 			}
-		}
 
-		let start_animation_radius = {
-			going: false,
-			time: 0,
-			start: undefined,
-			duration: 500,
-			back: false
+			ctx.font = `${8+24*opacity}px Arial`
+			ctx.fillStyle = `rgb(224, 224, 224)`
+
+			for (const {coord, name, align} of texts) {
+				ctx.textAlign = align
+				ctx.fillText(name, ...coord)
+			}
 		}
 
 		function show_idle(timestamp) {
@@ -227,34 +249,35 @@
 			for (const node of path) {
 				const hover =
 					cart_coord.y > 10 + path_y*24 &&
-					cart_coord.y < 34 + path_y*24
+					cart_coord.y < 34 + path_y*24 &&
+					cart_coord.x < 20 + ctx.measureText(node.name).width
 
 				if (hover && mouse_clicking) {
-					next_root_node = node
-					path = path.slice(0, path_y)
-					mouse_clicking = false
-					start_animation_radius.going = true
-					start_animation_radius.time = 0
-					start_animation_radius.back = true
+					goto_node(node, path.slice(0, path_y))
 				}
 
-				ctx.fillStyle = `hsl(${hash_name(node.name)}, 50%, 60%)`
+				ctx.fillStyle = `hsl(${node_hash(node)}, 50%, 60%)`
 				ctx.fillText(node.name, hover ? 30 : 20, 20 + path_y*24)
 				path_y += 1
 			}
 
-			ctx.fillStyle = `hsl(${hash_name(root.name)}, 50%, 60%)`
+			ctx.fillStyle = `hsl(${node_hash(root)}, 50%, 60%)`
 			ctx.beginPath()
 			ctx.arc(origin.x, origin.y, Math.min(100, anim_radius), 0, TAU)
 			ctx.fill()
 
-			ctx.font = `${(anim_radius/200)*24}px Arial`
+			const text_size = root.name.length <= 12 ? 24 : Math.floor(240/root.name.length)
+			ctx.font = `${(anim_radius/200)*text_size}px Arial`
 			ctx.textAlign = 'center'
 			ctx.fillStyle = `#e0e0e0`
 			ctx.fillText(root.name, origin.x, origin.y)
 
 			if (100 <= anim_radius) {
-				draw_node_children(root, 100, 50, TAU, 0, 3, 3, anim_radius, [root])
+				draw_node_children(root, 100, TAU, 0, 3, [root], {
+					init_depth: 3,
+					size: 50,
+					anim_radius: anim_radius
+				})
 			}
 
 			if (next_root_node && start_animation_radius.going == false) {
@@ -269,7 +292,6 @@
 		}
 
 		document.addEventListener('mousemove', (e) => {
-			// console.log(e)
 			const dist = Math.hypot(e.clientX - origin.x, e.clientY - origin.y)
 			const angle = Math.atan2(e.clientY - origin.y, e.clientX - origin.x)
 			const norm = (angle > 0 ? angle : angle + 2 * Math.PI) - 3*Math.PI/2
@@ -281,8 +303,17 @@
 			cart_coord.y = e.clientY
 		})
 
-		document.addEventListener('mousedown', (e) => { if (e.button == 0) mouse_clicking = true; })
-		document.addEventListener('mouseup', (e) => { if (e.button == 0) mouse_clicking = false; })
+		document.addEventListener('mousedown', (e) => { 
+			if (e.button == 0) mouse_clicking = true
+			else if (e.button == 2 && path.length > 0) {
+				goto_node(path[path.length - 1], path.slice(0, -1))
+			}
+		})
+		document.addEventListener('mouseup', (e) => { 
+			if (e.button == 0) mouse_clicking = false
+		})
+
+		generate_colors(root_node)
 
 		start_animation_radius.going = true
 		window.requestAnimationFrame(show_idle)
