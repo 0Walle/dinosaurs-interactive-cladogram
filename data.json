@@ -1,0 +1,67 @@
+{
+	"name": "Dinosaurs",
+	"children": [
+		{ "name": "Sauropodomorpha", "children": [
+			{ "name": "Prosauropoda", "children": [] },
+			{ "name": "Sauropoda", "children": [
+				{ "name": "Macronaria", "children": [
+					{ "name": "Brachiosauridae", "children": [] },
+					{ "name": "Titanosauria", "children": [] }
+				] },
+				{ "name": "Diplodocoidea", "children": [] }
+			] }
+		] },
+		{ "name": "Ornithoceslida", "children": [
+			{ "name": "Theropoda", "children": [
+				{ "name": "Coelophysoidea", "children": [] },
+				{ "name": "Dilophosauridae", "children": [] },
+				{ "name": "Ceratosauria", "children": [
+					{ "name": "Abelisauroidea", "children": [] },
+					{ "name": "Ceratosauridae", "children": [] }
+				] },
+				{ "name": "Tetanurae", "children": [
+					{ "name": "Megalosauroidea", "children": [
+						{ "name": "Megalosauridae", "children": [] },
+						{ "name": "Spinosauridae", "children": [] }
+					] },
+					{ "name": "Carnosauria", "children": [
+						{ "name": "Allosauroidea", "children": [] },
+						{ "name": "Carcharodontosauria", "children": [] }
+					] },
+					{ "name": "Coelurosauria", "children": [
+						{ "name": "Compsognathidae", "children": [] },
+						{ "name": "Tyrannosauridae", "children": [] },
+						{ "name": "Ornithomimosauria", "children": [] },
+						{ "name": "Maniraptora", "children": [
+							{ "name": "Therizinosauria", "children": [] },
+							{ "name": "Oviraptorosauria", "children": [] },
+							{ "name": "Archaeopterygidae", "children": [] },
+							{ "name": "Dromaeosauridae", "children": [] },
+							{ "name": "Troodontidae", "children": [] },
+							{ "name": "Avialae", "children": [] }
+						] }
+					] }
+				] }
+			] },
+			{ "name": "Ornithischia", "children": [
+				{ "name": "Heterodontosauridae", "children": [] },
+				{ "name": "Genasauria", "children": [
+					{ "name": "Thyreophora", "children": [
+						{ "name": "Ankylosauria", "children": [] },
+						{ "name": "Stegosauria", "children": [] }
+					] },
+					{ "name": "Neornithischia", "children": [
+						{ "name": "Cerapoda", "children": [
+							{ "name": "Ornithopoda", "children": [] },
+							{ "name": "Marginocephalia", "children": [
+								{ "name": "Ceratopsia", "children": [] },
+								{ "name": "Pachycephalosauria", "children": [] }
+							] }
+						] },
+						{ "name": "Groups I can't recognize anyone", "children": [] }
+					] }
+				] }
+			] }
+		] }
+	]
+}

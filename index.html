@@ -24,75 +24,14 @@
 		ctx.font = "32px Arial"
 		ctx.textBaseline = 'middle'
 
-		const cladogram = {
-			name: 'Dinosaurs',
-			children: [
-				{ name: 'Sauropodomorpha', children: [
-					{ name: 'Prosauropoda', children: [] },
-					{ name: 'Sauropoda', children: [
-						{ name: 'Macronaria', children: [
-							{ name: 'Brachiosauridae', children: [] },
-							{ name: 'Titanosauria', children: [] },
-						] },
-						{ name: 'Diplodocoidea', children: [] },
-					] },
-				] },
-				{ name: 'Ornithoceslida', children: [
-					{ name: 'Theropoda', children: [
-						{ name: 'Coelophysoidea', children: [] },
-						{ name: 'Dilophosauridae', children: [] },
-						{ name: 'Ceratosauria', children: [
-							{ name: 'Abelisauroidea', children: [] },
-							{ name: 'Ceratosauridae', children: [] },
-						] },
-						{ name: 'Tetanurae', children: [
-							{ name: 'Megalosauroidea', children: [
-								{ name: 'Megalosauridae', children: [] },
-								{ name: 'Spinosauridae', children: [] },
-							] },
-							{ name: 'Carnosauria', children: [
-								{ name: 'Allosauroidea', children: [] },
-								{ name: 'Carcharodontosauria', children: [] },
-							] },
-							{ name: 'Coelurosauria', children: [
-								{ name: 'Compsognathidae', children: [] },
-								{ name: 'Tyrannosauridae', children: [] },
-								{ name: 'Ornithomimosauria', children: [] },
-								{ name: 'Maniraptora', children: [
-									{ name: 'Therizinosauria', children: [] },
-									{ name: 'Oviraptorosauria', children: [] },
-									{ name: 'Archaeopterygidae', children: [] },
-									{ name: 'Dromaeosauridae', children: [] },
-									{ name: 'Troodontidae', children: [] },
-									{ name: 'Avialae', children: [] },
-								] },
-							] },
-						] },
-						
-					] },
-					{ name: 'Ornithischia', children: [
-						{ name: 'Heterodontosauridae', children: [] },
-						{ name: 'Genasauria', children: [
-							{ name: 'Thyreophora', children: [
-								{ name: 'Ankylosauria', children: [] },
-								{ name: 'Stegosauria', children: [] },
-							] },
-							{ name: 'Neornithischia', children: [
-								{ name: 'Cerapoda', children: [
-									{ name: 'Ornithopoda', children: [] },
-									{ name: 'Marginocephalia', children: [
-										{ name: 'Ceratopsia', children: [] },
-										{ name: 'Pachycephalosauria', children: [] },
-									] },
-								] },
-								{ name: 'Groups I can\'t recognize anyone', children: [] },
-							] },
-						] },
-					] },
-				] },
-			]
-		}
+		let root_node
 
+		fetch('data.json')
+		.then(res => res.json())
+		.then(data => {
+			root_node = data
+			start()
+		})
 
 		let origin = {
 			x: canvas.width/2,
@@ -104,7 +43,6 @@
 
 		let mouse_clicking = false
 
-		let root_node = cladogram
 		let path = []
 
 		let next_root_node = null
@@ -155,12 +93,12 @@
 			}
 		}
 
-		function draw_section(arc_start, arc_size, iradius, oradius) {
-			const start_angle = arc_start
-			const end_angle = arc_start + arc_size
+		function draw_section(arc_start, arc_size, inner_radius, outer_radius) {
+			const start_angle = arc_start - (Math.PI/2)
+			const end_angle = start_angle + arc_size
 			ctx.beginPath()
-			ctx.arc(origin.x, origin.y, iradius, end_angle - (Math.PI/2), start_angle - (Math.PI/2), true)
-			ctx.arc(origin.x, origin.y, oradius, start_angle - (Math.PI/2), end_angle - (Math.PI/2))
+			ctx.arc(origin.x, origin.y, inner_radius, end_angle, start_angle, true )
+			ctx.arc(origin.x, origin.y, outer_radius, start_angle, end_angle, false)
 			ctx.fill()
 		}
 
@@ -194,11 +132,11 @@
 					goto_node(node, [...path, ...parents])
 				}
 				
-				const oradius = Math.max(iradius + 5, Math.min(iradius + size + (hover ? 2 : 0), anim_radius))
+				const oradius = Math.max(iradius + 5, Math.min(iradius + size + (hover ? 3 : 0), anim_radius))
 				
 				ctx.fillStyle = `hsla(${node_hash(node)}, 50%, 60%, ${(hover ? 1 : opacity)*100}%)`
 
-				draw_section(arc_s, ARC, iradius + 5 - (hover ? 2 : 0), oradius)
+				draw_section(arc_s, ARC, iradius + 5 - (hover ? 3 : 0), oradius)
 
 				draw_node_children(node, iradius+size, ARC, arc_s, depth - 1, [...parents, node], options)
 				
@@ -240,8 +178,8 @@
 			}
 
 			const anim_radius = start_animation_radius.back 
-				? (1 - ease(start_animation_radius.time/start_animation_radius.duration)) * 250
-				: ease(start_animation_radius.time/start_animation_radius.duration) * 250
+				? (1 - ease(start_animation_radius.time/start_animation_radius.duration)) * 255
+				: ease(start_animation_radius.time/start_animation_radius.duration) * 255
 
 			ctx.font = `24px Arial`
 			ctx.textAlign = 'start'
@@ -291,6 +229,13 @@
 			window.requestAnimationFrame(show_idle)
 		}
 
+		function start() {
+			generate_colors(root_node)
+
+			start_animation_radius.going = true
+			window.requestAnimationFrame(show_idle)
+		}
+
 		document.addEventListener('mousemove', (e) => {
 			const dist = Math.hypot(e.clientX - origin.x, e.clientY - origin.y)
 			const angle = Math.atan2(e.clientY - origin.y, e.clientX - origin.x)
@@ -312,11 +257,6 @@
 		document.addEventListener('mouseup', (e) => { 
 			if (e.button == 0) mouse_clicking = false
 		})
-
-		generate_colors(root_node)
-
-		start_animation_radius.going = true
-		window.requestAnimationFrame(show_idle)
 	</script>
 </body>
 </html>
