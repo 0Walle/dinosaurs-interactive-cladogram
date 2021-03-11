@@ -24,12 +24,17 @@
 		ctx.font = "32px Arial"
 		ctx.textBaseline = 'middle'
 
+		let cladogram
+		let path_helper
 		let root_node
 
 		fetch('data.json')
 		.then(res => res.json())
 		.then(data => {
-			root_node = data
+			root_node = cladogram = data
+			path_helper = {
+				children: [cladogram]
+			}
 			start()
 		})
 
@@ -38,12 +43,14 @@
 			y: canvas.height/2,
 		}
 
-		let polar_coord = { mag: Infinity, angle: 0 }
-		let cart_coord = { x: 0, y: 0 }
+		const Input = {
+			polar_coord: { mag: Infinity, angle: 0 },
+			cart_coord: { x: 0, y: 0 },
+			mouse_clicking: false,
+		}
 
-		let mouse_clicking = false
 
-		let path = []
+		let path = [0]
 
 		let next_root_node = null
 
@@ -102,12 +109,12 @@
 			ctx.fill()
 		}
 
-		function draw_node_children(root, iradius, arc_size, arc_start, depth, parents, options) {
+		function draw_node_children(root, iradius, arc_size, arc_start, depth, parents_index, options) {
 			const {init_depth, size, anim_radius} = options
 
-			if (depth == 0) return
-			if (iradius > anim_radius) return
-			if (root.children.length == 0) return
+			if (depth == 0) return null
+			if (iradius > anim_radius) return null
+			if (root.children.length == 0) return null
 
 
 			const count = root.children.length
@@ -116,20 +123,22 @@
 
 			let texts = []
 
+			let node_to_return = null
+
 			for (let index = 0; index < count; ++index) {
 				const node = root.children[index]
 				
 				const arc_s = index*ARC+arc_start
 				const hover =
 					!start_animation_radius.going &&
-					polar_coord.mag > iradius && 
-					polar_coord.mag < iradius + size &&
-					polar_coord.angle > arc_s &&
-					polar_coord.angle < arc_s + ARC
+					Input.polar_coord.mag > iradius && 
+					Input.polar_coord.mag < iradius + size &&
+					Input.polar_coord.angle > arc_s &&
+					Input.polar_coord.angle < arc_s + ARC
 
-				if (hover && mouse_clicking) {
-					mouse_clicking = false
-					goto_node(node, [...path, ...parents])
+				if (hover) {
+					console.log([...parents_index, index])
+					node_to_return = { path: [...parents_index, index], node }
 				}
 				
 				const oradius = Math.max(iradius + 5, Math.min(iradius + size + (hover ? 3 : 0), anim_radius))
@@ -138,8 +147,6 @@
 
 				draw_section(arc_s, ARC, iradius + 5 - (hover ? 3 : 0), oradius)
 
-				draw_node_children(node, iradius+size, ARC, arc_s, depth - 1, [...parents, node], options)
-				
 				if (hover || depth == 1 || node.children.length == 0) {
 					const coord = polar_to_cart(oradius+10, arc_s+ARC/2 - Math.PI/2)
 					texts.push({
@@ -148,6 +155,9 @@
 						name: node.name
 					})
 				}
+
+				let new_hover = draw_node_children(node, iradius+size, ARC, arc_s, depth - 1, [...parents_index, index], options)
+				if (node_to_return === null) node_to_return = new_hover
 			}
 
 			ctx.font = `${8+24*opacity}px Arial`
@@ -157,6 +167,8 @@
 				ctx.textAlign = align
 				ctx.fillText(name, ...coord)
 			}
+
+			return node_to_return
 		}
 
 		function show_idle(timestamp) {
@@ -184,19 +196,24 @@
 			ctx.font = `24px Arial`
 			ctx.textAlign = 'start'
 			let path_y = 0
-			for (const node of path) {
-				const hover =
-					cart_coord.y > 10 + path_y*24 &&
-					cart_coord.y < 34 + path_y*24 &&
-					cart_coord.x < 20 + ctx.measureText(node.name).width
+			let last_node = path_helper
+			for (const index of path.slice(0, -1)) {
+				const node = last_node.children[index]
 
-				if (hover && mouse_clicking) {
-					goto_node(node, path.slice(0, path_y))
+				const hover =
+					Input.cart_coord.y > 10 + path_y*24 &&
+					Input.cart_coord.y < 34 + path_y*24 &&
+					Input.cart_coord.x < 20 + ctx.measureText(node.name).width
+
+				if (hover && Input.mouse_clicking) {
+					console.log(path.slice(0, path_y+1))
+					goto_node(node, path.slice(0, path_y+1))
 				}
 
 				ctx.fillStyle = `hsl(${node_hash(node)}, 50%, 60%)`
 				ctx.fillText(node.name, hover ? 30 : 20, 20 + path_y*24)
 				path_y += 1
+				last_node = node
 			}
 
 			ctx.fillStyle = `hsl(${node_hash(root)}, 50%, 60%)`
@@ -211,11 +228,16 @@
 			ctx.fillText(root.name, origin.x, origin.y)
 
 			if (100 <= anim_radius) {
-				draw_node_children(root, 100, TAU, 0, 3, [root], {
+				let hovering = draw_node_children(root, 100, TAU, 0, 3, path, {
 					init_depth: 3,
 					size: 50,
 					anim_radius: anim_radius
 				})
+
+				if (hovering !== null && Input.mouse_clicking) {
+					Input.mouse_clicking = false
+					goto_node(hovering.node, hovering.path)
+				}
 			}
 
 			if (next_root_node && start_animation_radius.going == false) {
@@ -241,22 +263,34 @@
 			const angle = Math.atan2(e.clientY - origin.y, e.clientX - origin.x)
 			const norm = (angle > 0 ? angle : angle + 2 * Math.PI) - 3*Math.PI/2
 
-			polar_coord.mag = dist
-			polar_coord.angle = (norm > 0 ? norm : norm + 4*Math.PI/2)
+			Input.polar_coord.mag = dist
+			Input.polar_coord.angle = (norm > 0 ? norm : norm + 4*Math.PI/2)
 
-			cart_coord.x = e.clientX
-			cart_coord.y = e.clientY
+			Input.cart_coord.x = e.clientX
+			Input.cart_coord.y = e.clientY
 		})
 
 		document.addEventListener('mousedown', (e) => { 
-			if (e.button == 0) mouse_clicking = true
-			else if (e.button == 2 && path.length > 0) {
-				goto_node(path[path.length - 1], path.slice(0, -1))
+			if (e.button == 0) Input.mouse_clicking = true
+			else if (e.button == 2 && path.length > 1) {
+				let new_path = path.slice(0, -1)
+				let last_node = path_helper
+				for (const index of new_path) {
+					last_node = last_node.children[index]
+				}
+				goto_node(last_node, new_path)
 			}
 		})
 		document.addEventListener('mouseup', (e) => { 
-			if (e.button == 0) mouse_clicking = false
+			if (e.button == 0) Input.mouse_clicking = false
 		})
+
+		window.addEventListener('resize', () => {
+			canvas.width = window.innerWidth
+			canvas.height = window.innerHeight
+			origin.x = canvas.width/2
+			origin.y = canvas.height/2
+		});
 	</script>
 </body>
 </html>
