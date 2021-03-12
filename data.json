@@ -1,26 +1,27 @@
 {
 	"name": "Dinosaurs",
 	"children": [
-		{ "name": "Sauropodomorpha", "children": [
-			{ "name": "Plateosauridae", "children": [] },
-			{ "name": "Massospondylidae", "children": [] },
-			{ "name": "Sauropoda", "children": [
-				{ "name": "Dicraeosauridae", "children": [] },
-				{ "name": "Diplodocidae", "children": [] },
-				{ "name": "Macronaria", "children": [
-					{ "name": "Camarasauridae", "children": [] },
-					{ "name": "Brachiosauridae", "children": [] },
-					{ "name": "Titanosauria", "children": [] }
+		{ "name": "Sauropodomorpha", "picture": "diplodocus", "children": [
+			{ "name": "Plateosauridae", "picture": "plateosaurus", "children": [] },
+			{ "name": "Massospondylidae", "picture": "massospondylus", "children": [] },
+			{ "name": "Sauropoda", "picture": "diplodocus", "children": [
+				{ "name": "Dicraeosauridae", "picture": "dicraeosaurus","children": [] },
+				{ "name": "Diplodocidae", "picture": "diplodocus", "children": [] },
+				{ "name": "Macronaria", "picture": "argentinosaurus", "children": [
+					{ "name": "Camarasauridae", "picture": "camarasaurus", "children": [] },
+					{ "name": "Brachiosauridae", "picture": "brachiosaurus", "children": [] },
+					{ "name": "Titanosauria", "picture": "argentinosaurus", "children": [] }
 				] }
 			] }
 		] },
+		{ "name": "Herrerasauridae", "picture": "herrerasauridae", "children": [] },
 		{ "name": "Ornithoceslida", "children": [
 			{ "name": "Theropoda", "children": [
-				{ "name": "Coelophysoidea", "children": [] },
-				{ "name": "Dilophosauridae", "children": [] },
-				{ "name": "Ceratosauria", "children": [
-					{ "name": "Abelisauroidea", "children": [] },
-					{ "name": "Ceratosauridae", "children": [] }
+				{ "name": "Coelophysoidea", "picture": "coelophysis", "children": [] },
+				{ "name": "Dilophosauridae", "picture": "dilophosaurus", "children": [] },
+				{ "name": "Ceratosauria", "picture": "ceratosaurus", "children": [
+					{ "name": "Abelisauroidea", "picture": "carnotaurus", "children": [] },
+					{ "name": "Ceratosauridae", "picture": "ceratosaurus", "children": [] }
 				] },
 				{ "name": "Tetanurae", "children": [
 					{ "name": "Megalosauroidea", "children": [
@@ -65,7 +66,6 @@
 					] }
 				] }
 			] }
-		] },
-		{ "name": "Herrerasauriade", "children": [] }
+		] }
 	]
 }
