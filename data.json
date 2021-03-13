@@ -16,53 +16,62 @@
 		] },
 		{ "name": "Herrerasauridae", "picture": "herrerasauridae", "children": [] },
 		{ "name": "Ornithoceslida", "children": [
-			{ "name": "Theropoda", "children": [
+			{ "name": "Theropoda", "picture": "carcharodontosaurus", "children": [
 				{ "name": "Coelophysoidea", "picture": "coelophysis", "children": [] },
 				{ "name": "Dilophosauridae", "picture": "dilophosaurus", "children": [] },
+				{ "name": "Tetanurae", "picture": "megalosaurus", "children": [
+					{ "name": "Megalosauroidea", "picture": "megalosaurus", "children": [
+						{ "name": "Megalosauridae", "picture": "megalosaurus", "children": [] },
+						{ "name": "Spinosauridae", "picture": "spinosaurus", "children": [] }
+					] },
+					{ "name": "Carnosauria", "picture": "carcharodontosaurus", "children": [
+						{ "name": "Allosauroidea", "picture": "allosaurus", "children": [] },
+						{ "name": "Carcharodontosauria", "picture": "carcharodontosaurus", "children": [] }
+					] },
+					{ "name": "Coelurosauria", "picture": "dromeosaurus", "children": [
+						{ "name": "Compsognathidae", "picture": "compsognathus", "children": [] },
+						{ "name": "Maniraptora", "picture": "dromeosaurus", "children": [
+							{ "name": "Therizinosauria", "picture": "therizinosaurus", "children": [] },
+							{ "name": "Oviraptorosauria", "picture": "citipati", "children": [] },
+							{ "name": "Paraves", "picture": "dromeosaurus", "children": [
+								{ "name": "Archaeopterygidae", "picture": "anchiornis", "children": [] },
+								{ "name": "Dromaeosauridae", "picture": "dromeosaurus", "children": [] },
+								{ "name": "Troodontidae", "picture": "troodon", "children": [] },
+								{ "name": "Avialae", "picture": "bird", "children": [] }
+							] }
+						] },
+						{ "name": "Tyrannosauridae", "picture": "gorgosaurus", "children": [] },
+						{ "name": "Ornithomimosauria", "picture": "struthiomimus", "children": [] }
+					] }
+				] },
 				{ "name": "Ceratosauria", "picture": "ceratosaurus", "children": [
 					{ "name": "Abelisauroidea", "picture": "carnotaurus", "children": [] },
 					{ "name": "Ceratosauridae", "picture": "ceratosaurus", "children": [] }
-				] },
-				{ "name": "Tetanurae", "children": [
-					{ "name": "Megalosauroidea", "children": [
-						{ "name": "Megalosauridae", "children": [] },
-						{ "name": "Spinosauridae", "children": [] }
-					] },
-					{ "name": "Carnosauria", "children": [
-						{ "name": "Allosauroidea", "children": [] },
-						{ "name": "Carcharodontosauria", "children": [] }
-					] },
-					{ "name": "Coelurosauria", "children": [
-						{ "name": "Compsognathidae", "children": [] },
-						{ "name": "Tyrannosauridae", "children": [] },
-						{ "name": "Ornithomimosauria", "children": [] },
-						{ "name": "Maniraptora", "children": [
-							{ "name": "Therizinosauria", "children": [] },
-							{ "name": "Oviraptorosauria", "children": [] },
-							{ "name": "Archaeopterygidae", "children": [] },
-							{ "name": "Dromaeosauridae", "children": [] },
-							{ "name": "Troodontidae", "children": [] },
-							{ "name": "Avialae", "children": [] }
-						] }
-					] }
 				] }
 			] },
-			{ "name": "Ornithischia", "children": [
-				{ "name": "Heterodontosauridae", "children": [] },
-				{ "name": "Genasauria", "children": [
-					{ "name": "Thyreophora", "children": [
-						{ "name": "Ankylosauria", "children": [] },
-						{ "name": "Stegosauria", "children": [] }
+			{ "name": "Ornithischia", "picture": "edmontosaurus", "children": [
+				{ "name": "Heterodontosauridae", "picture": "heterodontosaurus", "children": [] },
+				{ "name": "Thyreophora", "picture": "ankylosaurus", "children": [
+					{ "name": "Ankylosauria", "picture": "ankylosaurus", "children": [
+						{ "name": "Nodosauridae", "picture": "nodosaurus", "children": [] },
+						{ "name": "Ankylosauridae", "picture": "ankylosaurus", "children": [] }
 					] },
-					{ "name": "Neornithischia", "children": [
-						{ "name": "Cerapoda", "children": [
-							{ "name": "Ornithopoda", "children": [] },
-							{ "name": "Marginocephalia", "children": [
-								{ "name": "Ceratopsia", "children": [] },
-								{ "name": "Pachycephalosauria", "children": [] }
-							] }
+					{ "name": "Stegosauria", "picture": "stegosaurus", "children": [] }
+				] },
+				{ "name": "Neornithischia", "picture": "edmontosaurus", "children": [
+					{ "name": "Ornithopoda", "picture": "edmontosaurus", "children": [
+						{ "name": "Iguanodontia", "picture": "iguanodon", "children": [] },
+						{ "name": "Hadrosauridea", "picture": "edmontosaurus", "children": [
+							{ "name": "Saurolophinae", "picture": "edmontosaurus", "children": [] },
+							{ "name": "Lambeosaurinae", "picture": "parasaurolophus", "children": [] }
+						] }
+					] },
+					{ "name": "Marginocephalia", "picture": "pachycephalosaurus", "children": [
+						{ "name": "Ceratopsia", "picture": "pentaceratops", "children": [
+							{ "name": "Centrosaurinae", "picture": "centrosaurus", "children": [] },
+							{ "name": "Chasmosaurinae", "picture": "pentaceratops", "children": [] }
 						] },
-						{ "name": "Groups I can't recognize anyone", "children": [] }
+						{ "name": "Pachycephalosauria", "picture": "pachycephalosaurus", "children": [] }
 					] }
 				] }
 			] }

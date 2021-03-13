@@ -99,11 +99,11 @@ const Renderer = {
 
 						this.ctx.drawImage(img, coord[0] + offset, coord[1] + 24, k*img.width, k*img.height)
 					} else if (align == 'start') {
-						const offset = this.ctx.measureText(name).width
+						const offset = this.ctx.measureText(name).width + 5
 
 						this.ctx.drawImage(img, coord[0] + offset, coord[1] - 15, k*img.width, k*img.height)
 					} else if (align == 'end') {
-						const offset = this.ctx.measureText(name).width + k*img.width
+						const offset = this.ctx.measureText(name).width + k*img.width + 5
 
 						this.ctx.drawImage(img, coord[0] - offset, coord[1] - 15, k*img.width, k*img.height)
 					}
