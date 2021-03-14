@@ -77,22 +77,54 @@ const Renderer = {
 	draw_texts(texts, opacity) {
 		this.ctx.font = `${8+24*opacity}px Arial`
 		this.ctx.fillStyle = `rgb(224, 224, 224)`
+		this.ctx.strokeStyle = `rgb(224, 224, 224)`
 
-		for (const {coord, name, picture} of texts) {
+		for (const {coord, name, picture, arc_size, mag, direction} of texts) {
 			const align = coord[0] < origin.x ? 'end' : (coord[0] - origin.x) < 5 ? 'center' : 'start'
 
 			if (align == 'center') coord[1] += 10
 
-			this.ctx.textAlign = align
-			this.ctx.fillText(name, ...coord)
+			if (arc_size < Math.PI/8) {
 
-			// const file = name.toLowerCase()
+				const dist_x = coord[0] - origin.x
+				const dist_y = coord[1] - origin.y
+
+				
+
+				// coord[0] = origin.x + Math.sign(dist_x) * mag
+				// coord[0] = Math.abs(dist) < 100 ? origin.x + Math.sign(dist) * mag / 2 : coord[0]
+				// coord[1] = Math.abs(dist) < 100 ? coord[1] : coord[1]
+
+				if (Math.abs(dist_x) < mag/2) {
+				
+					this.ctx.beginPath()
+					this.ctx.moveTo(coord[0], coord[1])
+
+					const ncoord = polar_to_cart(mag+Math.abs(Math.sin(direction)**10)*50, direction)
+
+					coord[0] = ncoord[0]
+					coord[1] = ncoord[1]
+
+					this.ctx.lineTo(coord[0], coord[1])
+
+					// coord[0] = origin.x + Math.sign(dist_x) * mag/2
+					coord[0] = origin.x + dist_x * 2
+
+					this.ctx.lineTo(coord[0] - Math.sign(dist_x) * 10, coord[1])
+
+					this.ctx.stroke()
+				}
+
+				
+			}
+
+			this.ctx.textAlign = align
+			this.ctx.fillText(name, coord[0], coord[1])
 
 			if (picture && picture in images_cache) {
 				if (images_cache[picture] !== null) {
 					const img = images_cache[picture]
 					const k = 30/img.height
-					
 
 					if (align == 'center') {
 						const offset = -k*img.width/2
