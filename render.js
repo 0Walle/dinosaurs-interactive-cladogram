@@ -74,6 +74,16 @@ const Renderer = {
 		}
 	},
 
+	draw_species(species, opacity) {
+		for (const {point, tint, big} of species) {
+			this.ctx.fillStyle = `hsla(${tint}, 50%, 60%, ${opacity*100}%)`
+
+			this.ctx.beginPath()
+			this.ctx.arc(point[0], point[1], big ? 20 : 5, 0, 2*Math.PI)
+			this.ctx.fill()
+		}
+	},
+
 	draw_texts(texts, opacity) {
 		this.ctx.font = `${8+24*opacity}px Arial`
 		this.ctx.fillStyle = `rgb(224, 224, 224)`

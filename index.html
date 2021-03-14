@@ -66,13 +66,19 @@
 			return node.hash
 		}
 
-		function generate_colors(root, odd = false) {
+		function preprocess_tree(root, odd = false) {
 			const hash = Math.floor(hash_name(root.name)/4)
 			root.hash = odd ? hash : hash + 180
 
+			if (root.children === undefined) return 1
+
+			let all_leaves = 0
 			for (let i = 0; i < root.children.length; ++i) {
-				generate_colors(root.children[i], i % 2 != 0)
+				all_leaves += preprocess_tree(root.children[i], i % 2 != 0)
 			}
+
+			root.all_leaves = all_leaves == root.children.length
+			return 0
 		}
 
 		function draw_node_children(root, iradius, arc_size, arc_start, depth, parents_index, options, draw_batchs) {
@@ -92,12 +98,36 @@
 
 			let sections = []
 
+			let species = []
+
 			let node_to_return = null
 
 			for (let index = 0; index < count; ++index) {
 				const node = root.children[index]
-				
+
 				const arc_s = index*ARC+arc_start
+
+				if (node.children === undefined) {
+					const big = depth == init_depth
+					species.push({
+						point: polar_to_cart(iradius + (big ? 20 : 5), arc_s+ARC/2 - Math.PI/2),
+						tint: node_hash(node),
+						big: big,
+					})
+
+					if (big) {
+						const coord = polar_to_cart(iradius+60, arc_s+ARC/2 - Math.PI/2)
+						texts.push({
+							coord: coord,
+							arc_size: ARC,
+							direction: arc_s+ARC/2 - Math.PI/2,
+							mag: oradius+10,
+							name: node.name,
+						})
+					}
+					continue
+				}
+				
 				const hover =
 					!start_animation_radius.going &&
 					Input.polar_coord.mag > iradius && 
@@ -117,7 +147,7 @@
 					tint: node_hash(node),
 				})
 
-				if (hover || depth == 1 || node.children.length == 0) {
+				if (hover || depth == 1 || node.all_leaves || node.children.length == 0) {
 					const coord = polar_to_cart(oradius+20, arc_s+ARC/2 - Math.PI/2)
 					texts.push({
 						coord: coord,
@@ -135,7 +165,7 @@
 
 
 			const draw_commands = {
-				sections, texts, opacity, iradius, oradius
+				sections, texts, species, opacity, iradius, oradius
 			}
 
 			draw_batchs.push(draw_commands)
@@ -164,7 +194,7 @@
 			}
 
 			const eased_time = ease(start_animation_radius.time/start_animation_radius.duration)
-			const anim_radius = (start_animation_radius.back ? (1 - eased_time) : eased_time) * 255
+			const anim_radius = (start_animation_radius.back ? (1 - eased_time) : eased_time) * 250
 
 
 			Renderer.begin_UI()
@@ -194,8 +224,8 @@
 
 			if (100 <= anim_radius) {
 				let draw_batchs = []
-				let hovering = draw_node_children(root, 100, TAU, 0, 3, path, {
-					init_depth: 3,
+				let hovering = draw_node_children(root, 100, TAU, 0, 2, path, {
+					init_depth: 2,
 					size: 50,
 					anim_radius: anim_radius
 				}, draw_batchs)
@@ -205,9 +235,10 @@
 					goto_node(hovering.node, hovering.path)
 				}
 
-				for (const {sections, texts, opacity, iradius, oradius} of draw_batchs) {
+				for (const {sections, texts, species, opacity, iradius, oradius} of draw_batchs) {
 					Renderer.draw_sections(sections, iradius, oradius, opacity)
 					Renderer.draw_texts(texts, opacity)
+					Renderer.draw_species(species, opacity)
 				}
 			}
 
@@ -223,7 +254,7 @@
 		}
 
 		function start() {
-			generate_colors(root_node)
+			preprocess_tree(root_node)
 
 			start_animation_radius.going = true
 			window.requestAnimationFrame(show_idle)
